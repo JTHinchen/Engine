@@ -70,15 +70,16 @@ class Char:
         self.inv=[]
     def move(self,Game):
         end=0
+        directions=[(self.pos[0]+1,self.pos[1]),(self.pos[0]-1,self.pos[1]),(self.pos[0],self.pos[1]-1),(self.pos[0],self.pos[1]+1)]
+        print ('\nYou are in a maze.')
+        for i in Game.obj:
+            if self.pos==i:
+                print ('There is a', Game.terms[Game.obj[i]],'in the room')
+        if self.pos==self.otherChar(Game).pos:
+            print (self.otherChar(Game).name, 'is in the room')        
         while end==0:
             end=1#
-            directions=[(self.pos[0]+1,self.pos[1]),(self.pos[0]-1,self.pos[1]),(self.pos[0],self.pos[1]-1),(self.pos[0],self.pos[1]+1)]
-            print ('\nYou are in a maze.')
-            for i in Game.obj:
-                if self.pos==i:
-                    print ('There is a', Game.terms[Game.obj[i]],'in the room')
-            if self.pos==self.otherChar(Game).pos:
-                print (self.otherChar(Game).name, 'is in the room') 
+
             dirc=input(self.name+': What would you like to do?\n')
             if dirc=='pick up' and self.pos in Game.pickup.keys():
                 self.inv.append(Game.terms[Game.obj.pop(self.pos)])
@@ -132,7 +133,7 @@ class Game:
         self.c1=Char(self.world,"Char 1",'|/')
         self.c2=Char(self.world,"Char 2",'|\\')
         self.chars={self.c1:self.c1.name,self.c2:self.c2.name}
-        self.terms={'|k':'key','|D':'door'}
+        self.terms={'|k':'key','|D':'door','|S':'Secret Room'}
         self.newLev()
     def newLev (self):
         self.world=Map()       
@@ -140,16 +141,20 @@ class Game:
         self.obj={}
         self.fix={}
         self.pickup={}
-        keypos=self.world.emprm[randrange(len(self.world.emprm))]
-        self.pickup[keypos]='|k'
-        self.world.emprm.remove(keypos)
-        doorpos=self.world.emprm[randrange(len(self.world.emprm))]
-        self.fix[doorpos]='|D'
-        self.world.emprm.remove(doorpos)
+        self.putIn('|k',self.pickup)
+        self.putIn('|D',self.fix)
+        self.addSecs()
         self.obj=self.pickup.copy()
         self.obj.update(self.fix)
         for char in self.chars:
             char.reset(self)
+    def addSecs(self):
+        for i in range(randrange(5)+5):
+            self.putIn('|S',self.fix)
+    def putIn(self,sym,lis):
+        pos=self.world.emprm[randrange(len(self.world.emprm))]
+        lis[pos]=sym 
+        self.world.emprm.remove(pos)
     def run(self):
         self.world.display(self.c1,self.c2,self.obj)
         end=0
